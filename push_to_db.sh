@@ -4,8 +4,10 @@
 # *******************************
 # HELP LOGIC
 # *******************************
+dbConnection='/c/Users/rafte/snippet/db/scripts_n_snips.db'
 
 help() {
+
 	cat <<HEREDOC
 
 *******************************
@@ -32,43 +34,66 @@ HEREDOC
 # *******************************
 
 fileInDB() {
-	descriptionToAdd="$1"
-	tagsToAdd="$2"
-	editedCodeToAdd=$(cat "$3" | sed -e '1d' -e 's/\"/qu@/g' | xargs -0)
+	descriptionToAdd="$2"
+	tagsToAdd="$3"
+	editedCodeToAdd=$(cat "$4" | sed -e '1d' -e 's/\"/qu@/g' | xargs -0)
 
-	sqlite3.exe ./db/scripts_n_snips.db <<EOF
+	sqlite3.exe "${dbConnection}" <<EOF
 INSERT into scripts (description,code,tags)
 VALUES("$descriptionToAdd","$editedCodeToAdd","$tagsToAdd");
 EOF
 }
 
 oneLinerInDB() {
-	mainFunc () {
-	descriptionToAdd="$2"
-	tagsToAdd="$3"
-	echo "Paste 1 liner."
-	read -r codeToAdd
-	editedCodeToAdd=$(echo "$codeToAdd" | sed 's/\"/qu@/g' | xargs -0)
 
-	sqlite3.exe ./db/scripts_n_snips.db <<EOF
+	mainFunc() {
+		descriptionToAdd="$2"
+		tagsToAdd="$3"
+		echo "Paste 1 liner."
+		read -r codeToAdd
+		editedCodeToAdd=$(echo "$codeToAdd" | sed 's/\"/qu@/g' | xargs -0)
+
+		sqlite3.exe "${dbConnection}" <<EOF
 INSERT into scripts (description,code,tags)
 VALUES("$descriptionToAdd","$editedCodeToAdd","$tagsToAdd");
 EOF
 	}
 
-if [[ $2 == "" ]]; then
-	echo "Provide more args. Or run -h"
-else 
-	mainFunc "$@"
-fi
+	argsOnlyToDB() {
+		descriptionToAdd="$2"
+		tagsToAdd="$3"
+		codeToAdd="$4"
+		editedCodeToAdd=$(echo "$codeToAdd" | sed 's/\"/qu@/g' | xargs -0)
+		echo "Args are $2, $3, $4,"
+
+		sqlite3.exe "${dbConnection}" <<EOF
+INSERT into scripts (description,code,tags)
+VALUES("$descriptionToAdd","$editedCodeToAdd","$tagsToAdd");
+EOF
+	}
+
+	if [[ "$#" -lt 3 ]]; then
+		echo "Provide more args. Or run -h"
+	elif [[ "$#" -eq 3 ]]; then
+		mainFunc "$@"
+	elif [[ "$#" -gt 3 ]]; then
+		argsOnlyToDB "$@"
+	fi
 
 }
+# if [[ $2 == "" ]]; then
+# 	echo "Provide more args. Or run -h"
+# else
+# 	mainFunc "$@"
+# fi
+
+# }
 
 # *******************************
 # CONDITIONAL TRIGGERS FROM FLAGS
 # *******************************
 
-while getopts ":h1" option; do
+while getopts ":h1pf" option; do
 	case $option in
 	1) # display Help
 		oneLinerInDB "$@"
@@ -76,6 +101,10 @@ while getopts ":h1" option; do
 		;;
 	h) # display Help
 		help
+		exit
+		;;
+	f) # display Help
+		fileInDB "$@"
 		exit
 		;;
 	\?) # Invalid option
@@ -86,10 +115,8 @@ while getopts ":h1" option; do
 done
 
 if [[ $1 == "" ]]; then
-    echo "No arguments provided"
-    help
-else 
-	fileInDB "$@"
+	echo "No arguments provided"
+	help
+else
+	oneLinerInDB '-1' "$@"
 fi
-
-

@@ -4,9 +4,10 @@
 # *******************************
 # HELP LOGIC
 # *******************************
+dbConnection='/c/Users/rafte/snippet/db/scripts_n_snips.db'
 
 help() {
-	cat <<HEREDOC
+   cat <<HEREDOC
 
 *******************************
 EVALUATE WITH SNIPPET FROM DB
@@ -29,12 +30,11 @@ example: eval_from_db.sh '1' example.sh
 HEREDOC
 }
 
-
-seddy='';
+seddy=''
 evalFromDB() {
    IDToSearch="$1"
    result=$(
-      sqlite3.exe ./db/scripts_n_snips.db <<EOF
+      sqlite3.exe "${dbConnection}" <<EOF
 .mode list
 SELECT code FROM scripts WHERE ID="${IDToSearch}"
 EOF
@@ -50,22 +50,21 @@ EOF
 }
 
 while getopts ":h" option; do
-	case $option in
-	h) # display Help
-		help
-		exit
-		;;
-	\?) # Invalid option
-		echo "Error: Invalid option"
-		exit
-		;;
-	esac
+   case $option in
+   h) # display Help
+      help
+      exit
+      ;;
+   \?) # Invalid option
+      echo "Error: Invalid option"
+      exit
+      ;;
+   esac
 done
 
 if [[ $1 == "" ]]; then
-    echo "No arguments provided"
-    help
-else 
+   echo "No arguments provided"
+   help
+else
    evalFromDB "$@"
 fi
-
