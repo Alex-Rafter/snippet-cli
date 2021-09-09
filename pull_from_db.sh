@@ -1,42 +1,77 @@
 #!/usr/bin/env bash
 # This script is for pulling data from the database
 
-# *******************************
-# HELP LOGIC
-# *******************************
+#-------------------------------------------------------
+#1 Global Variables
+#2 Global Functions
+#3 Main Functaionality: Serach by tag, description, etc
+#4 Conditional function calls (based on flags passed)
+#-------------------------------------------------------
+
+#-------------------------------------------------------
+#1 Global Variables : START
+#-------------------------------------------------------
 dbConnection='/c/Users/rafte/snippet/db/scripts_n_snips.db'
 NC='\033[0m'
 hiColour='\033[0;36m'
+#-------------------------------------------------------
+#1 Global Variables : END
+#-------------------------------------------------------
 
-# Global Funcs
+#-------------------------------------------------------
+# 2 Global Funcs : START
+#-------------------------------------------------------
+
+reFormatQuotedStrings() {
+	echo "$1" | sed 's/qu\@/\"/g'
+}
+
+SQLQuery() {
+	# Args: $1 = .mode, $2 = query statement $3 = .headers (optional)
+	[[ $3 == "off" ]] && headers='.headers off' || headers='.headers on'
+	sqlite3.exe "${dbConnection}" <<EOF
+$headers
+$1
+$2
+EOF
+}
+
 searchDBByChosenId() {
 	echo 'id or -a'
 	read -r chosenID
-	IDsToPass=$(echo "$seddy" | awk 'BEGIN { FS="|"}; {if (NR>3) print $2}' | tr -d '\n' | sed -e 's/\s\s/,/g' -e 's/\s//g')
+	IDsToPass=$(echo "$1" | awk 'BEGIN { FS="|"}; {if (NR>3) print $2}' | tr -d '\n' | sed -e 's/\s\s/,/g' -e 's/\s//g')
 	[[ $chosenID == "-a" ]] && chosenID="$IDsToPass"
 	searchDBByID '-i' "$chosenID"
 }
 
 logSummaryThenCode() {
-	result=$(
-		sqlite3.exe "${dbConnection}" <<EOF
-.mode list
-SELECT id,description,tags FROM scripts WHERE ID="${IDToSearch}"
-EOF
-	)
-	codeResult=$(
-		sqlite3.exe "${dbConnection}" <<EOF
-.mode quote
-SELECT code FROM scripts WHERE ID="${IDToSearch}"
-EOF
-	)
-
-	sedRes=$(echo "$codeResult" | sed 's/qu\@/\"/g')
-	printf "\n${NC}$result\n\n${hiColour}$sedRes\n"
+	summaryResult=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${IDToSearch}\"" 'off')
+	codeResult=$(SQLQuery '.mode quote' "SELECT code FROM scripts WHERE ID=\"${IDToSearch}\"")
+	printf "\n${NC}%sn\n${hiColour}%s\n" "$summaryResult" "$(reFormatQuotedStrings "$codeResult")"
 }
 
-# Global Funcs : END
+formatForLIKESQuerySQL() {
+	echo "$1" | sed -r 's/(^|$)/\%/g'
+}
 
+printResults() {
+	if [[ ! $1 ]]; then
+		echo "No results found"
+		exit
+	else
+		echo "$1"
+	fi
+}
+
+#-------------------------------------------------------
+# 2 Global Funcs : END
+#-------------------------------------------------------
+
+#-------------------------------------------------------
+#3 Main Script Functionality : START
+#-------------------------------------------------------
+
+# Log Out HELP : START
 help() {
 
 	cat <<HEREDOC
@@ -66,7 +101,9 @@ example: pull_from_db.sh -a
 HEREDOC
 
 }
+# Log Out HELP : END
 
+# Search by ID : START
 searchDBByID() {
 	IdArgs=$(echo "${@:2}" | tr "," "\n")
 	for indvID in $IdArgs; do
@@ -75,50 +112,40 @@ searchDBByID() {
 	done
 }
 
+# Search by ID : END
+
+# Search by DESCRIPTION : START
 searchDBByDescription() {
 	if [[ -z "$2" ]]; then
 		echo "Description search (single word is best)"
-		read -r descriptionWordsToSearch
+		read -r descriptionToSearch
 		colsToLog='ID,description,tags'
 		modeToUse='table'
 	else
-		descriptionWordsToSearch="$2"
+		descriptionToSearch="$2"
 		colsToLog='ID,description,tags'
 		modeToUse='table'
 	fi
 
-	sedDescriptionWordsToSearch=$(echo "$descriptionWordsToSearch" | sed -r 's/(^|$)/\%/g')
-	result=$(
-		sqlite3.exe "${dbConnection}" <<EOF
-.headers on
-.mode $modeToUse
-SELECT $colsToLog FROM scripts WHERE description LIKE "${sedDescriptionWordsToSearch}"
-EOF
-	)
+	formattedDescriptionToSearch=$(formatForLIKESQuerySQL "$descriptionToSearch")
+	result=$(SQLQuery ".mode $modeToUse" "SELECT $colsToLog FROM scripts WHERE description LIKE \"${formattedDescriptionToSearch}\"")
+	formattedResult=$(reFormatQuotedStrings "$result")
+	printResults "$formattedResult"
 
-	seddy=$(echo "$result" | sed -e 's/qu\@/\"/g' -e 's/;//g')
-	printResults "$seddy"
 	echo 'code? y/n'
-	read answer
+	read -r answer
+
 	if [[ $answer == "y" ]]; then
-		searchDBByChosenId
-
+		searchDBByChosenId "$formattedResult"
 	else
 		exit
 	fi
 
 }
+# Search by DESCRIPTION : END
 
-printResults() {
-	if [[ ! $1 ]]; then
-		echo "No results found"
-		exit
-	else
-		echo "$1"
-	fi
-}
-
-outDB() {
+# Search by TAG : START
+searchDBByTag() {
 	if [[ -z "$2" ]]; then
 		echo "Tags to search"
 		read -r tagsToSearch
@@ -126,48 +153,45 @@ outDB() {
 		tagsToSearch="$2"
 	fi
 
-	sedTags=$(echo "$tagsToSearch" | sed -r 's/(^|$)/\%/g')
-	result=$(
-		sqlite3.exe "${dbConnection}" <<EOF
-.headers on
-.mode table
-SELECT ID,description,tags FROM scripts WHERE tags LIKE "${sedTags}"
-EOF
-	)
-	seddy=$(echo "$result" | sed -e 's/qu\@/\"/g' -e 's/;//g')
-	printResults "$seddy"
+	fomattedTags=$(formatForLIKESQuerySQL "$tagsToSearch")
+	result="$(SQLQuery '.mode table' "SELECT ID,description,tags FROM scripts WHERE tags LIKE \"${fomattedTags}\"")"
+	formattedResult="$(reFormatQuotedStrings "$result")"
+	printResults "$formattedResult"
 
 	echo 'code? y/n'
-	read answer
+	read -r answer
+
 	if [[ $answer == "y" ]]; then
-		searchDBByChosenId
-		# IDsToPass=$(echo "$seddy" | awk 'BEGIN { FS="|"}; {if (NR>3) print $2}' | tr -d '\n' | sed -e 's/\s\s/,/g' -e 's/\s//g')
-		# searchDBByID '-i' "$IDsToPass"
+		searchDBByChosenId "$formattedResult"
 	else
 		exit
 	fi
 
 }
+# Search by TAG : END
 
-allDB() {
-	result=$(
-		sqlite3.exe "${dbConnection}" <<EOF
-.mode list
-SELECT * FROM scripts
-EOF
-	)
-	sedRes=$(echo "$result" | sed 's/qu\@/\"/g')
-	echo "$sedRes"
+# Seach ALL in DB : START
+allFromDB() {
+	result=$(SQLQuery '.mode list' 'SELECT * FROM scripts')
+	reFormatQuotedStrings "$result"
 }
+# Seach ALL in DB : END
 
+#-------------------------------------------------------
+#3 Main Script Functionality : START
+#-------------------------------------------------------
+
+#-------------------------------------------------------
+# 4 Conditional Flags : START
+#-------------------------------------------------------
 while getopts ":aitdh" option; do
 	case $option in
 	a) # display Help
-		allDB
+		allFromDB
 		exit
 		;;
 	t) # display Help
-		outDB "$@"
+		searchDBByTag "$@"
 		exit
 		;;
 	d) # display Help
@@ -189,10 +213,9 @@ while getopts ":aitdh" option; do
 	esac
 done
 
-if [[ $1 == "" ]]; then
-	allDB
-	# echo "No arguments provided"
-	# help
-else
-	allDB
-fi
+# Search ALL if No Args
+if [[ -z $1 ]]; then allFromDB; fi
+
+#-------------------------------------------------------
+# 4 Conditional Flags : END
+#-------------------------------------------------------

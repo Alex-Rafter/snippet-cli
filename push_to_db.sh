@@ -6,6 +6,26 @@
 # *******************************
 dbConnection='/c/Users/rafte/snippet/db/scripts_n_snips.db'
 
+
+#-------------------------------------------------------
+# 2 Global Funcs : START
+#-------------------------------------------------------
+SQLQuery() {
+	# Args: $1 = .mode, $2 = query statement $3 = .headers (optional)
+	[[ $3 == "off" ]] && headers='.headers off' || headers='.headers on'
+	if [[ -z $2 ]]; then mode="$2"; fi
+	sqlite3.exe "${dbConnection}" <<EOF
+$headers
+$mode
+$2
+EOF
+}
+
+#-------------------------------------------------------
+# 2 Global Funcs : END
+#-------------------------------------------------------
+
+
 help() {
 
 	cat <<HEREDOC
@@ -37,11 +57,7 @@ fileInDB() {
 	descriptionToAdd="$2"
 	tagsToAdd="$3"
 	editedCodeToAdd=$(cat "$4" | sed -e '1d' -e 's/\"/qu@/g' | xargs -0)
-
-	sqlite3.exe "${dbConnection}" <<EOF
-INSERT into scripts (description,code,tags)
-VALUES("$descriptionToAdd","$editedCodeToAdd","$tagsToAdd");
-EOF
+	SQLQuery '' "INSERT into scripts (description,code,tags) VALUES(\"$descriptionToAdd\",\"$editedCodeToAdd\",\"$tagsToAdd\");"
 }
 
 oneLinerInDB() {
@@ -93,7 +109,7 @@ EOF
 # CONDITIONAL TRIGGERS FROM FLAGS
 # *******************************
 
-while getopts ":h1pf" option; do
+while getopts ":h1f" option; do
 	case $option in
 	1) # display Help
 		oneLinerInDB "$@"

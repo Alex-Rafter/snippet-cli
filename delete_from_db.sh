@@ -40,7 +40,6 @@ HEREDOC
 
 deleteItemFromDB() {
     idOfItemToDelete="$2"
-    echo "Id is $idOfItemToDelete"
     confirmDeleteQ() {
         printf "\nDelete snippet %s Y/N?\n" "${idOfItemToDelete}"
     }
