@@ -4,22 +4,23 @@
 # *******************************
 # HELP LOGIC
 # *******************************
-dbConnection='/c/Users/rafte/snippet/db/scripts_n_snips.db'
+
+#-------------------------------------------------------
+#1 Global Variables : START
+#-------------------------------------------------------
+# shellcheck source=global_vars.sh
+source global_vars.sh
+
+#-------------------------------------------------------
+#1 Global Variables : END
+#-------------------------------------------------------
 
 
 #-------------------------------------------------------
 # 2 Global Funcs : START
 #-------------------------------------------------------
-SQLQuery() {
-	# Args: $1 = .mode, $2 = query statement $3 = .headers (optional)
-	[[ $3 == "off" ]] && headers='.headers off' || headers='.headers on'
-	if [[ -z $2 ]]; then mode="$2"; fi
-	sqlite3.exe "${dbConnection}" <<EOF
-$headers
-$mode
-$2
-EOF
-}
+# shellcheck source=global_functions.sh
+source global_functions.sh
 
 #-------------------------------------------------------
 # 2 Global Funcs : END
@@ -27,7 +28,6 @@ EOF
 
 
 help() {
-
 	cat <<HEREDOC
 
 *******************************
@@ -54,56 +54,39 @@ HEREDOC
 # *******************************
 
 fileInDB() {
-	descriptionToAdd="$2"
-	tagsToAdd="$3"
-	editedCodeToAdd=$(cat "$4" | sed -e '1d' -e 's/\"/qu@/g' | xargs -0)
+	local descriptionToAdd="$2"
+	local tagsToAdd="$3"
+	local editedCodeToAdd
+
+	editedCodeToAdd=$(FormatSnippetForDBInput "$4")
 	SQLQuery '' "INSERT into scripts (description,code,tags) VALUES(\"$descriptionToAdd\",\"$editedCodeToAdd\",\"$tagsToAdd\");"
 }
 
 oneLinerInDB() {
 
-	mainFunc() {
-		descriptionToAdd="$2"
-		tagsToAdd="$3"
+	readInCodeToAdd() {
 		echo "Paste 1 liner."
 		read -r codeToAdd
-		editedCodeToAdd=$(echo "$codeToAdd" | sed 's/\"/qu@/g' | xargs -0)
-
-		sqlite3.exe "${dbConnection}" <<EOF
-INSERT into scripts (description,code,tags)
-VALUES("$descriptionToAdd","$editedCodeToAdd","$tagsToAdd");
-EOF
 	}
 
-	argsOnlyToDB() {
-		descriptionToAdd="$2"
-		tagsToAdd="$3"
-		codeToAdd="$4"
-		editedCodeToAdd=$(echo "$codeToAdd" | sed 's/\"/qu@/g' | xargs -0)
-		echo "Args are $2, $3, $4,"
+	mainFunc() {
+		local descriptionToAdd="$2"
+		local tagsToAdd="$3"
+		local codeToAdd
+		[[ $# -eq 3 ]] && readInCodeToAdd || codeToAdd="$4"
+		local editedCodeToAdd
 
-		sqlite3.exe "${dbConnection}" <<EOF
-INSERT into scripts (description,code,tags)
-VALUES("$descriptionToAdd","$editedCodeToAdd","$tagsToAdd");
-EOF
+		editedCodeToAdd=$(FormatSnippetForDBInput "$codeToAdd")
+		SQLQuery '' "INSERT into scripts (description,code,tags) VALUES(\"$descriptionToAdd\",\"$editedCodeToAdd\",\"$tagsToAdd\")"
 	}
 
 	if [[ "$#" -lt 3 ]]; then
 		echo "Provide more args. Or run -h"
-	elif [[ "$#" -eq 3 ]]; then
+	else
 		mainFunc "$@"
-	elif [[ "$#" -gt 3 ]]; then
-		argsOnlyToDB "$@"
 	fi
 
 }
-# if [[ $2 == "" ]]; then
-# 	echo "Provide more args. Or run -h"
-# else
-# 	mainFunc "$@"
-# fi
-
-# }
 
 # *******************************
 # CONDITIONAL TRIGGERS FROM FLAGS

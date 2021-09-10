@@ -11,9 +11,9 @@
 #-------------------------------------------------------
 #1 Global Variables : START
 #-------------------------------------------------------
-dbConnection='/c/Users/rafte/snippet/db/scripts_n_snips.db'
-NC='\033[0m'
-hiColour='\033[0;36m'
+# shellcheck source=global_vars.sh
+source global_vars.sh
+
 #-------------------------------------------------------
 #1 Global Variables : END
 #-------------------------------------------------------
@@ -21,47 +21,8 @@ hiColour='\033[0;36m'
 #-------------------------------------------------------
 # 2 Global Funcs : START
 #-------------------------------------------------------
-
-reFormatQuotedStrings() {
-	echo "$1" | sed 's/qu\@/\"/g'
-}
-
-SQLQuery() {
-	# Args: $1 = .mode, $2 = query statement $3 = .headers (optional)
-	[[ $3 == "off" ]] && headers='.headers off' || headers='.headers on'
-	sqlite3.exe "${dbConnection}" <<EOF
-$headers
-$1
-$2
-EOF
-}
-
-searchDBByChosenId() {
-	echo 'id or -a'
-	read -r chosenID
-	IDsToPass=$(echo "$1" | awk 'BEGIN { FS="|"}; {if (NR>3) print $2}' | tr -d '\n' | sed -e 's/\s\s/,/g' -e 's/\s//g')
-	[[ $chosenID == "-a" ]] && chosenID="$IDsToPass"
-	searchDBByID '-i' "$chosenID"
-}
-
-logSummaryThenCode() {
-	summaryResult=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${IDToSearch}\"" 'off')
-	codeResult=$(SQLQuery '.mode quote' "SELECT code FROM scripts WHERE ID=\"${IDToSearch}\"")
-	printf "\n${NC}%sn\n${hiColour}%s\n" "$summaryResult" "$(reFormatQuotedStrings "$codeResult")"
-}
-
-formatForLIKESQuerySQL() {
-	echo "$1" | sed -r 's/(^|$)/\%/g'
-}
-
-printResults() {
-	if [[ ! $1 ]]; then
-		echo "No results found"
-		exit
-	else
-		echo "$1"
-	fi
-}
+# shellcheck source=global_functions.sh
+source global_functions.sh
 
 #-------------------------------------------------------
 # 2 Global Funcs : END
@@ -116,30 +77,22 @@ searchDBByID() {
 
 # Search by DESCRIPTION : START
 searchDBByDescription() {
+	colsToLog='ID,description,tags'
+	modeToUse='table'
+
 	if [[ -z "$2" ]]; then
 		echo "Description search (single word is best)"
 		read -r descriptionToSearch
-		colsToLog='ID,description,tags'
-		modeToUse='table'
 	else
 		descriptionToSearch="$2"
-		colsToLog='ID,description,tags'
-		modeToUse='table'
 	fi
+
 
 	formattedDescriptionToSearch=$(formatForLIKESQuerySQL "$descriptionToSearch")
 	result=$(SQLQuery ".mode $modeToUse" "SELECT $colsToLog FROM scripts WHERE description LIKE \"${formattedDescriptionToSearch}\"")
 	formattedResult=$(reFormatQuotedStrings "$result")
 	printResults "$formattedResult"
-
-	echo 'code? y/n'
-	read -r answer
-
-	if [[ $answer == "y" ]]; then
-		searchDBByChosenId "$formattedResult"
-	else
-		exit
-	fi
+	checkIfNowRenderSnippet "$formattedResult"
 
 }
 # Search by DESCRIPTION : END
@@ -157,17 +110,10 @@ searchDBByTag() {
 	result="$(SQLQuery '.mode table' "SELECT ID,description,tags FROM scripts WHERE tags LIKE \"${fomattedTags}\"")"
 	formattedResult="$(reFormatQuotedStrings "$result")"
 	printResults "$formattedResult"
-
-	echo 'code? y/n'
-	read -r answer
-
-	if [[ $answer == "y" ]]; then
-		searchDBByChosenId "$formattedResult"
-	else
-		exit
-	fi
+	checkIfNowRenderSnippet "$formattedResult"
 
 }
+
 # Search by TAG : END
 
 # Seach ALL in DB : START

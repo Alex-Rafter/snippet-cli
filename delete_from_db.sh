@@ -1,12 +1,25 @@
 #!/usr/bin/env bash
 # This script is for pulling data from the database
 
-# *******************************
-# HELP LOGIC
-# *******************************
-dbConnection='/c/Users/rafte/snippet/db/scripts_n_snips.db'
-NC='\033[0m'
-hiColour='\033[0;36m'
+#-------------------------------------------------------
+#1 Global Variables : START
+#-------------------------------------------------------
+# shellcheck source=global_vars.sh
+source global_vars.sh
+
+#-------------------------------------------------------
+#1 Global Variables : END
+#-------------------------------------------------------
+
+#-------------------------------------------------------
+# 2 Global Funcs : START
+#-------------------------------------------------------
+# shellcheck source=global_functions.sh
+source global_functions.sh
+
+#-------------------------------------------------------
+# 2 Global Funcs : END
+#-------------------------------------------------------
 
 help() {
 
@@ -43,34 +56,25 @@ deleteItemFromDB() {
     confirmDeleteQ() {
         printf "\nDelete snippet %s Y/N?\n" "${idOfItemToDelete}"
     }
-    result=$(
-        sqlite3.exe "${dbConnection}" <<EOF
-.mode list
-SELECT id,description,tags FROM scripts WHERE ID="${idOfItemToDelete}"
-EOF
-    )
-    codeResult=$(
-        sqlite3.exe "${dbConnection}" <<EOF
-.mode quote
-SELECT code FROM scripts WHERE ID="${idOfItemToDelete}"
-EOF
-    )
+
+    result=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${idOfItemToDelete}\"")
+    codeResult=$(SQLQuery '.mode quote' "SELECT code FROM scripts WHERE ID=\"${idOfItemToDelete}\"" 'off')
+    sedRes="${codeResult/qu\@/\"/}"
+
+    # Messages to screen : START
     if [[ -z $result ]]; then
-        echo "Does not exist"
-        echo "you passed $1 $2"
+        printf "Does not exist\nYou passed id: %s" "$2"
         exit
     fi
 
     confirmDeleteQ
-    sedRes=$(echo "$codeResult" | sed 's/qu\@/\"/g')
-    printf "\n${NC}%s\n\n${hiColour}%s\n\n${NC}" "$result" "$sedRes"
+    printf "\n${noColour}%s\n\n${hiColour}%s\n\n${noColour}" "$result" "$sedRes"
+    read -r deleteBool
+    # Messages to screen : END
 
-    read deleteBool
     if [[ $deleteBool == "y" ]]; then
-        sqlite3.exe "${dbConnection}" <<EOF
-DELETE from scripts WHERE id=${idOfItemToDelete};
-EOF
-        printf "\n Done!"
+        SQLQuery '' "DELETE from scripts WHERE id=${idOfItemToDelete}"
+        printf "\nDone baby!"
     else
         exit
     fi
@@ -92,10 +96,3 @@ while getopts ":dh" option; do
         ;;
     esac
 done
-
-if [[ $1 == "" ]]; then
-    echo "No arguments provided"
-    # help
-else
-    deleteItemFromDB "$@"
-fi
