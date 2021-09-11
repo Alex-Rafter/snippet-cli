@@ -3,8 +3,11 @@
 
 help() {
 
+local hiColour
 hiColour=$(printf '\033[0;36m')
+local noColour
 noColour=$(printf '\033[0m')
+
 	cat <<HEREDOC
 *******************************
 ${hiColour}OPTIONS${noColour}

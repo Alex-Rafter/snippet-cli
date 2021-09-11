@@ -1,32 +1,24 @@
 #!/usr/bin/env bash
-# This script is for pulling data from the database
+#-------------------------------------------------------
+#1 Global Variables : START
+#-------------------------------------------------------
+# shellcheck source=global_vars.sh
+source global_vars.sh
+
+#-------------------------------------------------------
+# 2 Global Funcs : START
+#-------------------------------------------------------
+# shellcheck source=global_functions.sh
+source global_functions.sh
 
 mainPull() {
 
-	# Search by ID : START
-	searchDBByID() {
-		local IdArgs
-		IdArgs=$(echo "${@:2}" | tr "," "\n")
-		for indvID in $IdArgs; do
-			IDToSearch="$indvID"
-			logSummaryThenCode
-		done
-	}
-
-	# Search by ID : END
-
 	# Search by DESCRIPTION : START
 	searchDBByDescription() {
-		local colsToLog
-		local modeToUse
+		local colsToLog='ID,description,tags'
+		local modeToUse='table'
+
 		local descriptionToSearch
-		local formattedDescriptionToSearch
-		local result
-		local formattedResult
-
-		colsToLog='ID,description,tags'
-		modeToUse='table'
-
 		if [[ -z "$2" ]]; then
 			echo "Description search (single word is best)"
 			read -r descriptionToSearch
@@ -34,8 +26,11 @@ mainPull() {
 			descriptionToSearch="$2"
 		fi
 
+		local formattedDescriptionToSearch
 		formattedDescriptionToSearch=$(formatForLIKESQuerySQL "$descriptionToSearch")
+		local result
 		result=$(SQLQuery ".mode $modeToUse" "SELECT $colsToLog FROM scripts WHERE description LIKE \"${formattedDescriptionToSearch}\"")
+		local formattedResult
 		formattedResult=$(reFormatQuotedStrings "$result")
 		printResults "$formattedResult"
 		checkIfNowRenderSnippet "$formattedResult"
@@ -46,10 +41,6 @@ mainPull() {
 	# Search by TAG : START
 	searchDBByTag() {
 		local tagsToSearch
-		local fomattedTags
-		local result
-		local formattedResult
-
 
 		if [[ -z "$2" ]]; then
 			echo "Tags to search"
@@ -58,8 +49,11 @@ mainPull() {
 			tagsToSearch="$2"
 		fi
 
+		local fomattedTags
 		fomattedTags=$(formatForLIKESQuerySQL "$tagsToSearch")
+		local result
 		result="$(SQLQuery '.mode table' "SELECT ID,description,tags FROM scripts WHERE tags LIKE \"${fomattedTags}\"")"
+		local formattedResult
 		formattedResult="$(reFormatQuotedStrings "$result")"
 		printResults "$formattedResult"
 		checkIfNowRenderSnippet "$formattedResult"
@@ -85,6 +79,9 @@ mainPull() {
 		allFromDB
 	elif [[ "$OPTARG" == '-a' ]]; then
 		allFromDB
+		exit
+	elif [[ "$OPTARG" == '-i' ]]; then
+		searchDBByID "$@"
 		exit
 	elif [[ "$OPTARG" == '-t' ]]; then
 		searchDBByTag "$@"

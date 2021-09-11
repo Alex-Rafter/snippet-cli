@@ -1,17 +1,31 @@
 #!/usr/bin/env bash
-# This script is for pulling data from the database
+#-------------------------------------------------------
+#1 Global Variables : START
+#-------------------------------------------------------
+# shellcheck source=global_vars.sh
+source global_vars.sh
+
+#-------------------------------------------------------
+# 2 Global Funcs : START
+#-------------------------------------------------------
+# shellcheck source=global_functions.sh
+source global_functions.sh
 
 mainUpdate() {
 
     updateItemFromDB() {
-        idOfItemToUpdate="$2"
+
+        local idOfItemToUpdate="$2"
+
         confirmUpdateQ() {
             printf "\nUpdate snippet %s Y/N?\n" "${idOfItemToUpdate}"
         }
 
+        local result
         result=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${idOfItemToUpdate}\"")
+        local codeResult
         codeResult=$(SQLQuery '.mode quote' "SELECT code FROM scripts WHERE ID=\"${idOfItemToUpdate}\"" 'off')
-        sedRes="${codeResult/qu\@/\"/}"
+        local sedRes="${codeResult/qu\@/\"/}"
 
         if [[ -z $result ]]; then
             echo "Does not exist"
@@ -21,6 +35,7 @@ mainUpdate() {
         confirmUpdateQ
         printf "\n${noColour}%s\n\n${hiColour}%s\n\n${noColour}" "$result" "$sedRes"
 
+        local updateBool
         read -r updateBool
 
         if [[ $updateBool == "y" ]]; then
@@ -34,10 +49,14 @@ EOF
 
             # Log out updated version of snippet
             printf "\n Done! Snippet %s Now:\n" "${idOfItemToUpdate}"
-            result=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${idOfItemToUpdate}\"")
-            codeResult=$(SQLQuery '.mode quote' "SELECT code FROM scripts WHERE ID=\"${idOfItemToUpdate}\"" 'off')
-            sedRes="${codeResult/qu\@/\"/}"
-            printf "\n${noColour}%s\n\n${hiColour}%s\n\n${noColour}" "$result" "$sedRes"
+
+            local updatedResult
+            updatedResult=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${idOfItemToUpdate}\"")
+            local updatedCodeResult
+            updatedCodeResult=$(SQLQuery '.mode quote' "SELECT code FROM scripts WHERE ID=\"${idOfItemToUpdate}\"" 'off')
+            local sedRes="${updatedCodeResult/qu\@/\"/}"
+
+            printf "\n${noColour}%s\n\n${hiColour}%s\n\n${noColour}" "$updatedResult" "$sedRes"
 
         else
 
