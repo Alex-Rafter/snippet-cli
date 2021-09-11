@@ -23,7 +23,7 @@ mainDelete() {
         result=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${idOfItemToDelete}\"")
         local codeResult
         codeResult=$(SQLQuery '.mode quote' "SELECT code FROM scripts WHERE ID=\"${idOfItemToDelete}\"" 'off')
-        local sedRes="${codeResult/qu\@/\"/}"
+        local sedRes="${codeResult//qu\@/\"}"
 
         # Messages to screen : START
         if [[ -z $result ]]; then

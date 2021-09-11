@@ -25,7 +25,7 @@ mainUpdate() {
         result=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${idOfItemToUpdate}\"")
         local codeResult
         codeResult=$(SQLQuery '.mode quote' "SELECT code FROM scripts WHERE ID=\"${idOfItemToUpdate}\"" 'off')
-        local sedRes="${codeResult/qu\@/\"/}"
+        local sedRes="${codeResult//qu\@/\"}"
 
         if [[ -z $result ]]; then
             echo "Does not exist"
@@ -54,7 +54,7 @@ EOF
             updatedResult=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${idOfItemToUpdate}\"")
             local updatedCodeResult
             updatedCodeResult=$(SQLQuery '.mode quote' "SELECT code FROM scripts WHERE ID=\"${idOfItemToUpdate}\"" 'off')
-            local sedRes="${updatedCodeResult/qu\@/\"/}"
+            local sedRes="${updatedCodeResult//qu\@/\"}"
 
             printf "\n${noColour}%s\n\n${hiColour}%s\n\n${noColour}" "$updatedResult" "$sedRes"
 
