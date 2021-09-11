@@ -21,45 +21,26 @@ source global_functions.sh
 # 2 Global Funcs : END
 #-------------------------------------------------------
 
-help() {
+#-------------------------------------------------------
+# 3 Help : START
+#-------------------------------------------------------
+# shellcheck source=help.sh
+source help.sh
+#-------------------------------------------------------
+# 3 Help : END
+#-------------------------------------------------------
 
-    cat <<HEREDOC
-
-*******************************
-LOG SNIPPET FROM DB
-*******************************
-
-options: 
-    -h: help
-	-a: show all
-	-o: search by tag
-	-d: search by description
-
-SNIPPET TO STDOUT
-[-a,-o,-d,-h]
-
-SEARCH BY TAG
-example: pull_from_db.sh -o
-
-SEARCH BY DESCRIPTION
-pull_from_db.sh -d
-
-SEARCH ALL
-example: pull_from_db.sh -a
-
-HEREDOC
-
-}
+mainDelete() {
 
 deleteItemFromDB() {
-    idOfItemToDelete="$2"
+    local idOfItemToDelete="$2"
     confirmDeleteQ() {
         printf "\nDelete snippet %s Y/N?\n" "${idOfItemToDelete}"
     }
 
-    result=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${idOfItemToDelete}\"")
-    codeResult=$(SQLQuery '.mode quote' "SELECT code FROM scripts WHERE ID=\"${idOfItemToDelete}\"" 'off')
-    sedRes="${codeResult/qu\@/\"/}"
+    local result=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${idOfItemToDelete}\"")
+    local codeResult=$(SQLQuery '.mode quote' "SELECT code FROM scripts WHERE ID=\"${idOfItemToDelete}\"" 'off')
+    local sedRes="${codeResult/qu\@/\"/}"
 
     # Messages to screen : START
     if [[ -z $result ]]; then
@@ -80,19 +61,17 @@ deleteItemFromDB() {
     fi
 }
 
-while getopts ":dh" option; do
-    case $option in
-    d) # display Help
+
+    #-------------------------------------------------------
+    # Conditional Function Calls
+    #-------------------------------------------------------
+
+    # Search ALL if No Args
+    if [[ -z $2 ]]; then
+        echo 'Pass ID of item to delete'
+        exit
+    else
         deleteItemFromDB "$@"
         exit
-        ;;
-    h) # display Help
-        help
-        exit
-        ;;
-    \?) # Invalid option
-        echo "Error: Invalid option"
-        exit
-        ;;
-    esac
-done
+    fi
+}

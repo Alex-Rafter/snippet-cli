@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-
-#-------------------------------------------------------
-# 2 Global Funcs : START
-#-------------------------------------------------------
 reFormatQuotedStrings() {
 	echo "${1/qu\@/\"/}"
 }
@@ -69,10 +65,5 @@ checkIfNowRenderSnippet() {
 		searchDBByChosenId "$answer" "$summaryDetails"
 	fi
 }
-
-
-#-------------------------------------------------------
-# 2 Global Funcs : END
-#-------------------------------------------------------
 
 
