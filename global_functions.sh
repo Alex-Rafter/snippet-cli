@@ -35,17 +35,19 @@ FormatSnippetForDBInput() {
 	fi
 }
 
-	# Search by ID : START
-	searchDBByID() {
-		local IdArgs
-		IdArgs=$(echo "${@:2}" | tr "," "\n")
-		for indvID in $IdArgs; do
-			IDToSearch="$indvID"
-			logSummaryThenCode "$IDToSearch"
-		done
-	}
+# Search by ID : START
+searchDBByID() {
+	local IdArgs
+	IdArgs=$(echo "${@:2}" | awk -F, '{for(i=1; i<=NF; i++) printf $i ","}' | sed 's/,$//')
+	local codeResult
+	codeResult=$(SQLQuery '.mode json' "SELECT id,description,code FROM scripts WHERE ID IN (${IdArgs})" 'off')
+	local jqEditedCodeResult
+	jqEditedCodeResult=$(echo "$codeResult" | jq ' .[] | .ID, .description, .code' | sed -e 's/\\n/\n/g' -e 's/^\([0-9]\)/\n\n\1/g')
+	reFormatQuotedStrings "$jqEditedCodeResult"
+}
 
-	# Search by ID : END
+
+# Search by ID : END
 
 searchDBByChosenId() {
 	local chosenID="$1"
@@ -55,14 +57,6 @@ searchDBByChosenId() {
 	searchDBByID '-i' "$chosenID"
 }
 
-logSummaryThenCode() {
-	local summaryResult
-	local IDToSearch="$1"
-	summaryResult=$(SQLQuery '.mode list' "SELECT id,description,tags FROM scripts WHERE ID=\"${IDToSearch}\"" 'off')
-	local codeResult
-	codeResult=$(SQLQuery '.mode list' "SELECT code FROM scripts WHERE ID=\"${IDToSearch}\"" 'off')
-	printf "\n${noColour}%s\n\n${hiColour}%s\n" "$summaryResult" "$(reFormatQuotedStrings "$codeResult")"
-}
 
 formatForLIKESQuerySQL() {
 	echo "$1" | sed -r 's/(^|$)/\%/g'
