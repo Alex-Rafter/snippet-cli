@@ -3,13 +3,13 @@
 #1 Global Variables : START
 #-------------------------------------------------------
 # shellcheck source=global_vars.sh
-source global_vars.sh
+source 'C:/Users/rafte/snippet/global_vars.sh'
 
 #-------------------------------------------------------
 # 2 Global Funcs : START
 #-------------------------------------------------------
 # shellcheck source=global_functions.sh
-source global_functions.sh
+source 'C:/Users/rafte/snippet/global_functions.sh'
 
 mainPull() {
 

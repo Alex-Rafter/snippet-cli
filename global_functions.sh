@@ -3,7 +3,8 @@
 #1 Global Variables : START
 #-------------------------------------------------------
 # shellcheck source=global_vars.sh
-source global_vars.sh
+source 'C:/Users/rafte/snippet/global_vars.sh'
+
 
 reFormatQuotedStrings() {
 	echo "${1//qu\@/\"}"

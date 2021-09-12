@@ -1,0 +1,21 @@
+snippet:
+    ✔ sort HEREDOC issue so i can format code @done(21-09-08 16:54)
+    ✔ format all the code again @done(21-09-08 16:54)
+    ✔ refactor / update each of the 4 x files @done(21-09-11 12:47)
+        ✔ pull @done(21-09-09 10:54)
+        ✔ push @done(21-09-10 21:51)
+        ✔ del @done(21-09-10 21:51)
+        ✔ update @done(21-09-10 21:51)
+    ✔ Delete from DB @done(21-09-09 09:03)
+    ✔ Update item in DB @done(21-09-09 09:02)
+    ✔ Update Help @done(21-09-11 11:12)
+        ✔ breakout to its own page @done(21-09-11 11:12)
+    ✔ Set up a 'main' file and add in others as modules @done(21-09-11 12:42)
+        ✔ Set up call to other pages as functions (wrap each in a func), passing a reduced args list as in .Bashrc @done(21-09-11 12:42)
+    ✘ Break out file for flags? @cancelled(21-09-11 12:46)
+    ✘ Script way to get lists of one-liners into the DB @cancelled(21-09-12 12:33)
+    ✔ sort what should be in tags, what should be in desc @done(21-09-12 12:33)
+    tags = just lang type, desc = anything else - max 1 line desc
+    ✘ List out tags @cancelled(21-09-12 12:33)
+    ✔ remove / re-set DB? @done(21-09-12 12:33)
+    tags: only single tag works because of formatted tags for like isn;t set up propelry. Each ind tag needs to be added

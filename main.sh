@@ -12,31 +12,31 @@
 #1 Global Variables : START
 #-------------------------------------------------------
 # shellcheck source=global_vars.sh
-source global_vars.sh
+source 'C:/Users/rafte/snippet/global_vars.sh'
 
 #-------------------------------------------------------
 # 2 Global Funcs : START
 #-------------------------------------------------------
 # shellcheck source=global_functions.sh
-source global_functions.sh
+source 'C:/Users/rafte/snippet/global_functions.sh'
 
 #-------------------------------------------------------
 # 3 Help : START
 #-------------------------------------------------------
 # shellcheck source=help.sh
-source help.sh
+source 'C:/Users/rafte/snippet/help.sh'
 
 #-------------------------------------------------------
 # 4 Main Funcs : START
 #-------------------------------------------------------
 # shellcheck source=push_to_db.sh
-source push_to_db.sh
+source 'C:/Users/rafte/snippet/push_to_db.sh'
 # shellcheck source=pull_from_db.sh
-source pull_from_db.sh
+source 'C:/Users/rafte/snippet/pull_from_db.sh'
 # shellcheck source=update_from_db.sh
-source update_from_db.sh
+source 'C:/Users/rafte/snippet/update_from_db.sh'
 # shellcheck source=delete_from_db.sh
-source delete_from_db.sh
+source 'C:/Users/rafte/snippet/delete_from_db.sh'
 
 #-------------------------------------------------------
 # 5 Conditional Function Calls : START
