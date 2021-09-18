@@ -27,7 +27,6 @@ mainPush() {
 
 		readInCodeToAdd() {
 			echo "Paste 1 liner."
-			local codeToAdd
 			read -r codeToAdd
 		}
 

@@ -39,9 +39,9 @@ FormatSnippetForDBInput() {
 # Search by ID : START
 searchDBByID() {
 	local IdArgs
-	IdArgs=$(echo "${@:2}" | awk -F, '{for(i=1; i<=NF; i++) printf $i ","}' | sed 's/,$//')
+	IdArgs=$(echo "${@:2}" | awk -F, '{for(i=1; i<=NF; i++) printf $i ","}' | sed -E 's/,$|,,$//')
 	local codeResult
-	codeResult=$(SQLQuery '.mode json' "SELECT id,description,code FROM scripts WHERE ID IN (${IdArgs})" 'off')
+	codeResult=$(SQLQuery '.mode json' "SELECT * FROM scripts WHERE ID IN (${IdArgs})" 'off')
 	local jqEditedCodeResult
 	jqEditedCodeResult=$(echo "$codeResult" | jq ' .[] | .ID, .description, .code' | sed -e 's/\\n/\n/g' -e 's/^\([0-9]\)/\n\n\1/g')
 	reFormatQuotedStrings "$jqEditedCodeResult"

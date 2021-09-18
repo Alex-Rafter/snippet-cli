@@ -65,7 +65,7 @@ mainPull() {
 	# Seach ALL in DB : START
 	allFromDB() {
 		local result
-		result=$(SQLQuery '.mode list' 'SELECT * FROM scripts')
+		result=$(SQLQuery '.mode table' 'SELECT id,description,tags FROM scripts' 'on')
 		reFormatQuotedStrings "$result"
 	}
 	# Seach ALL in DB : END
