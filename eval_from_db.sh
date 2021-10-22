@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # This script is for evaluating data from the database
+# This script is to be removed.
 
 # *******************************
 # HELP LOGIC
