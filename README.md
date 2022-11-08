@@ -1,15 +1,15 @@
 # Snippet CLI
 
+Snippet Cli provides  a convenient way to manage a library of snippets and one-liners without needing to leave the command line. It provides useful tools like tagging, listing multiple stored items, and editing library items all from the terminal. No need to rely on a plain text file, or to use a separate GUI app, and no need to trawl through your Bash history. 
+
+
 ## Problem
-Managing a library of snippets and one-liners using a plain text file is not ideal. And while there are useful way to access and filter history using Bash's shortcuts and / or piping output to other programmes like grep, there is a still a lack of convenience to features like tagging, grouping, updating, entries; and listing related items, when compared to using a dedicated tool.
+Managing a library of snippets and one-liners using a plain text file is not ideal. And while there are useful way to access and filter history using Bash's shortcuts and / or piping output to other programmes like grep, there is a still a lack of convenience to features like tagging, grouping, and updating entries; and listing related items, when compared to using a dedicated tool.
 
 ## Goals
 - Build a clipboard manager / snippet tool that can be used directly from the command line.
 - Use a solution that allows for tagging and listing multiple entries, based on different aspects of the snippet or its description.
-- Use this as a vehicle to delve deeper into Bash scripting.
-
-## Intro
-Snippet Cli provides  a convenient way to manage a library of snippets and one-liners without needing to leave the command line. It provides useful tools like tagging, listing multiple stored items, and editing library items all from the terminal. No need to rely on a plain text file, or to use a separate GUI app, and no need to trawl through your Bash history. 
+- Use this project to delve deeper into Bash scripting.
 
 ## Features
 - SQLite backed terminal clipboard manager written in Bash
