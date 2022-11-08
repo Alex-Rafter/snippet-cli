@@ -1,6 +1,6 @@
 # Snippet CLI
 
-Snippet Cli provides  a convenient way to manage a library of snippets and one-liners without needing to leave the command line. It provides useful tools like tagging, listing multiple stored items, and editing library items all from the terminal. No need to rely on a plain text file, or to use a separate GUI app, and no need to trawl through your Bash history. 
+Snippet CLI provides  a convenient way to manage a library of snippets and one-liners without needing to leave the command line. It provides useful tools like tagging, listing multiple stored items, and editing library items all from the terminal. No need to rely on a plain text file, or to use a separate GUI app, and no need to trawl through your Bash history. 
 
 
 ## Problem
