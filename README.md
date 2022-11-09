@@ -8,6 +8,7 @@ Managing a library of snippets and one-liners using a plain text file is not ide
 
 ## Goals
 - Build a clipboard manager / snippet tool that can be used directly from the command line.
+- Be able to create snippets from prompted user input, command line argument, or from a file.
 - Use a solution that allows for tagging and listing multiple entries, based on different aspects of the snippet or its description.
 - Use this project to delve deeper into Bash scripting.
 
